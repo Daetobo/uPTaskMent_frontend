@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --------- Personalizar el scrollbar --------- */
+
+/* Personalizar el ancho de la scrollbar */
+::-webkit-scrollbar {
+    width: 12px;
+  }
+  
+  /* Personalizar el fondo de la pista (track) */
+  ::-webkit-scrollbar-track {
+    background: #e4e4e4; 
+  }
+  
+  /* Personalizar la barra del scrollbar (thumb) */
+  ::-webkit-scrollbar-thumb {
+    background: #888; 
+    border-radius: 5px; /* Añadir un redondeo al scrollbar */
+  }
+  
+  /* Estilo al pasar el mouse sobre la scrollbar */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+  }
+  
+  /* ------------------------------------------------- */

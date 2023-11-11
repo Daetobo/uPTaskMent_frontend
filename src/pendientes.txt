@@ -1,0 +1,11 @@
+//TODO 
+pendiente: cuando el user esta logueado bloquear la pagina de inicio de la web
+           ya que el header depende del id del loguin del usuario y los componentes
+           cambian, por tanto, se debe bloquear para que no vean el componente errado.
+
+            * validar esta linea window.location = `/equipos/${id}` en componente ModalFormMiembroEquipo
+            ya que se recarga la pagina otra solución es modificar la respuesta d ela api, para que me de
+            cuando creo un proyecto me devuelva el proyecto con el push del miembro y en el front, hacer copia
+            del equipo y agregar equipo actualizado con la data:
+            const equipoActualizado = {...equipo};
+            equipoActualizado.miembros = [...equipo.miembros,data]

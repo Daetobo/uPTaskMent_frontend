@@ -1,0 +1,60 @@
+import { useState, useEffect, createContext } from "react";
+import clienteAxios from "../config/clienteAxios";
+
+const AuthContext = createContext();
+
+const AuthProvider = ({children}) => {
+
+    const [auth, setAuth] = useState({});
+    const [cargando, setCargando] = useState(true);
+
+    // Este useEfecct es para que cuando se recargue la pagina no se pierda los datos del login,
+    // por tanto se consulta el perfil que trae los datos de inicio (login)
+    useEffect(() => {
+
+        const autenticarUsuario = async () => {
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                setCargando(false)
+                return
+            }
+
+            const config = {
+                headers:{
+                    "Content-Type": "aplication/json",
+                    Authorization: `Bearer ${token}`
+                }
+            }
+
+            try {
+                const { data } = await clienteAxios('/usuarios/perfil', config)
+                setAuth(data)
+            } catch (error) {
+                setAuth({})
+            } 
+            setCargando(false)
+        }
+
+        return () => autenticarUsuario()
+    }, []);
+    
+    return (
+        <AuthContext.Provider
+            value={{
+                auth,
+                setAuth,
+                cargando
+            }}
+        >
+            {children}
+        </AuthContext.Provider>
+    )
+
+}
+
+export {
+    AuthProvider
+}
+
+export default AuthContext;
