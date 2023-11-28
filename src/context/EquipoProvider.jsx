@@ -17,10 +17,18 @@ const EquipoProvider = ({children}) =>{
     const [emailMiembroEquipo, setEmailMiembroEquipo] = useState('');
     const [idEquipo,setIdEquipo] = useState(false);
     const [totalMiembrosEquipo, setTotalMiembrosEquipo] = useState(0);
-    const [modalFormProyecto,setModalFormProyecto] = useState(false)
-    console.log(equipo)
+    const [modalFormProyecto,setModalFormProyecto] = useState(false);
+    const [modalFormSprint,setModalFormSprint] = useState(false);
+    const [sprint, setSprint] = useState({});
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [idSprintPopover, setIdSprintPopover] = useState('');
+    const [openModalEliminarTarea, setOpenModalEliminarTarea] = useState(false);
+    const [tarea,setTarea] = useState({});
+    const [openDrawer, setOpenDrawer] = useState(false);
+
     const navigate = useNavigate();
 
+    // ----------------------- SECTION EQUIPOS --------------------
     useEffect(() => {
         const obtenerEquipos = async () =>{
             try {
@@ -52,10 +60,11 @@ const EquipoProvider = ({children}) =>{
         setAlerta(alerta)
     }
 
+    // ------------------------- SECTION EQUIPO --------------------
+
     const handleModalEquipo = () => {
-        setModalFormEquipo(!modalFormEquipo);
         setEquipo({})
-        
+        setModalFormEquipo(!modalFormEquipo);
     }
 
     const submitEquipo = async (equipo) => {
@@ -238,7 +247,7 @@ const EquipoProvider = ({children}) =>{
         console.log(id)
       }
 
-    //   ------------- Proyectos ----------------------
+    //   ------------- SECTION PROYECTOS ----------------------
 
       const submitProyecto = async (proyecto) =>{
         const token = localStorage.getItem("token");
@@ -263,6 +272,198 @@ const EquipoProvider = ({children}) =>{
     const handleModalFormProyecto = () =>{
         setModalFormProyecto(!modalFormProyecto)
     }
+
+    // ------------------------ SECTION SPRINT -----------------------
+
+    const handleModalFormSprint = () =>{
+        setModalFormSprint(!modalFormSprint);
+        setSprint({});
+        setTimeout(() => {
+            setAlerta({});
+        }, 2000);
+        
+    }
+    
+    const submitSprint = async (sprint) => {       
+        if (sprint?.id) {
+            await editarSprint(sprint)
+        }else{
+            await crearSprint(sprint)
+        }
+    }
+
+    const crearSprint = async (sprint) => {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const config = {
+            headers:{
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            }
+        }
+        
+        try {
+           const {data}  = await clienteAxios.post('/sprints',sprint,config)
+           const equipoActualizado = {...equipo}
+           equipoActualizado.sprints = [...equipoActualizado.sprints,data]
+           setEquipo(equipoActualizado)
+           setAlerta({
+                msg: 'Esprint creado correctamente',
+                error:false
+           })
+
+        } catch (error) {
+            setAlerta({
+                mensaje:error.response.data.msg,
+                error:true
+            })
+        }
+    }
+
+    const editarSprint = async (sprint) => {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const config = {
+            headers:{
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            }
+        }
+        try {
+            const { data } = await clienteAxios.put(`/sprints/${sprint.id}`,sprint,config)
+            const equipoActualizado = { ...equipo };
+            equipoActualizado.sprints = equipoActualizado.sprints.map(stateSprint => (
+                    stateSprint._id === sprint.id ? data : stateSprint
+            ))
+            setEquipo(equipoActualizado);
+            setAlerta({
+                    msg: 'Esprint Editado correctamente',
+                    error:false
+            })
+        } catch (error) {
+            setAlerta({
+                mensaje:error.response.data.msg,
+                error:true
+            })
+        }
+    }
+
+    const handleModalEditarSprint = (sprint) => {
+        setSprint(sprint);
+        setModalFormSprint(!modalFormSprint)
+    }
+
+    const eliminarSprint = async (id) =>{
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const config = {
+            headers:{
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            }
+        }
+        try {
+            const {data} = await clienteAxios.delete(`/sprints/${id}`,config)
+            const equipoActualizado = {...equipo};
+            equipoActualizado.sprints = equipoActualizado.sprints.filter((item)=>(item._id !== id));
+            setEquipo(equipoActualizado)
+            setAlerta({
+                msg:'Sprint Eliminado Correctamente',
+                error:false
+            })
+        } catch (error) {
+            setAlerta({
+                msg:error.response.data.msg,
+                error:true
+            })
+        }
+
+    }
+
+    // ------------------------ SECTION TAREAS -----------------------
+
+    const crearTarea = async (tarea) => {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const config = {
+            headers:{
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            }
+        }
+        
+        try {
+            const {data}  = await clienteAxios.post('/tareas',tarea,config)
+            const equipoActualizado = {...equipo}
+            const sprintIndex = equipoActualizado.sprints.findIndex(sprint => tarea.sprint === sprint._id)
+            if (sprintIndex !== -1) {
+                equipoActualizado.sprints[sprintIndex].tareas = [...equipoActualizado.sprints[sprintIndex].tareas,data]
+                console.log(equipoActualizado.sprints[sprintIndex].tareas)
+            }
+            setEquipo(equipoActualizado)
+        } catch (error) {
+            console.log(error)
+        }
+    
+    }
+
+    const handleClickPopover = (event,id) => {
+        setAnchorEl(event.currentTarget);
+        setIdSprintPopover(id)
+    };
+    
+    const handleClosePopover = () => {
+    setAnchorEl(null);
+    };
+
+    const handleModalEliminarTarea = (tarea) => {
+        setOpenModalEliminarTarea(!openModalEliminarTarea);
+        setTarea(tarea)
+    };
+
+    const eliminarTarea = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const config = {
+            headers:{
+                'Content-Type':'application/json',
+                Authorization: `Bearer ${token} `
+            }
+        }
+
+        try {
+
+            const { data } = await clienteAxios.delete(`/tareas/${tarea._id}`,config)
+            setAlerta({
+                msg:data.msg,
+                error:false
+            })
+
+            const equipoActualizado = {...equipo}
+            const sprintIndex = equipoActualizado.sprints.findIndex(sprint => tarea.sprint === sprint._id);
+            equipoActualizado.sprints[sprintIndex].tareas = equipoActualizado.sprints[sprintIndex].tareas.filter(task => task._id !== tarea._id);
+            setEquipo(equipoActualizado);
+
+            handleModalEliminarTarea();
+            setTarea({});
+            
+            setTimeout(() => {
+                setAlerta({});
+            }, 2000);
+        } catch (error) {
+            console.log(error)
+        }
+       
+    }
+
+    const handleDrawerOpen = () => {
+        setOpenDrawer(!openDrawer);
+    };
+    
 
     return (
         <ProyectosContext.Provider
@@ -293,7 +494,25 @@ const EquipoProvider = ({children}) =>{
                 eliminarEquipo,
                 submitProyecto,
                 modalFormProyecto,
-                handleModalFormProyecto
+                handleModalFormProyecto,
+                handleModalFormSprint,
+                modalFormSprint,
+                submitSprint,
+                sprint,
+                handleModalEditarSprint,
+                eliminarSprint,
+                crearTarea,
+                handleClickPopover,
+                handleClosePopover,
+                anchorEl,
+                idSprintPopover,
+                handleModalEliminarTarea,
+                openModalEliminarTarea,
+                eliminarTarea,
+                tarea,
+                openDrawer,
+                handleDrawerOpen,
+                setOpenDrawer
             }}
         >
             {children}

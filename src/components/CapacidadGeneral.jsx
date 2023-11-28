@@ -5,7 +5,7 @@ import 'react-circular-progressbar/dist/styles.css';
 
 const ControlCapacidad = () => {
 
-  const { totalMiembrosEquipo,equipo } = useEquipos();
+  const { totalsEquipo,equipo } = useEquipos();
 
   const { nombre, proyectos, creador, createdAt } = equipo;
 
@@ -13,7 +13,7 @@ const ControlCapacidad = () => {
     <>
       <div className='flex justify-around p-6 items-center shadow-lg border rounded h-52 gap-1'>
         <div className='flex-col'>
-          <p className='font-bold text-sm text-midnight-500 '>Total Usuarios: <span className='text-silver-900 font-normal'>{totalMiembrosEquipo}</span></p>
+          <p className='font-bold text-sm text-midnight-500 '>Total Usuarios: <span className='text-silver-900 font-normal'>{totalsEquipo}</span></p>
           <p className='font-bold text-sm text-midnight-500 '>Capacidad Disponible: <span className='text-silver-900 font-normal'>90%</span></p>
           <p className='font-bold text-sm text-midnight-500 '>% Asignación: <span className='text-silver-900 font-normal'>10%</span></p>
         </div>
